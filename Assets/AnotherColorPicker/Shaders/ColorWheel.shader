@@ -1,4 +1,4 @@
-﻿Shader "CustomUI/ColorWheel"
+Shader "CustomUI/ColorWheel"
 {
 	Properties
 	{
@@ -6,6 +6,7 @@
 		_Hue("Hue", Float) = 0
 		_Sat("Saturation", Float) = 0
 		_Val("Value", Float) = 0
+		[Toggle] _IncludeGray("Include Gray", int) = 0
 		_ColorsCount("Colors Segments", int) = 40
 		_WheelsCount("Number of Wheels", int) = 2
 		_StartingAngle("Starting Angle",Range(0,360))=0
@@ -85,6 +86,7 @@
 				float _Hue;
 				float _Sat;
 				float _Val;
+				float _IncludeGray;
 				float _ColorsCount;
 				float _WheelsCount;
 				float _StartingAngle;
@@ -122,9 +124,11 @@
 					shiftedH=fmod(shiftedH,1);
 					//assign a single color for the whole portion instead of applying gradient value of H
 					float discretedH = float(floor(shiftedH*(_ColorsCount))) / (_ColorsCount);
-					//a slight shift of h value to distribute all the (0-1) h range on "_ColorsCount-1" portions and leave the last portion for the gray color
-					discretedH=discretedH*(_ColorsCount)/(_ColorsCount-1);
-					if (shiftedH > 1.0-1.0/(_ColorsCount) && shiftedH<=1)
+					if (_IncludeGray)
+						//a slight shift of h value to distribute all the (0-1) h range on "_ColorsCount-1" portions and leave the last portion for the gray color
+						discretedH=discretedH*(_ColorsCount)/(_ColorsCount-1);
+					
+					if (_IncludeGray && shiftedH > 1.0-1.0/(_ColorsCount) && shiftedH<=1)
 						color = half4(HSV2RGB(float3(0, 0, (_Val-_Sat +0.75)/1.5)), color.a);
 					else
 						color = half4(HSV2RGB(float3(discretedH, _Sat, _Val)), color.a);
