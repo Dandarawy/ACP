@@ -8,6 +8,7 @@ public class ColorPaletteController : MonoBehaviour, IBeginDragHandler, IDragHan
     [SerializeField] RectTransform picker;
     [SerializeField] Image pickedColorImage;
     [SerializeField] Material colorWheelMat;
+    [SerializeField] private bool includeGray = true;
     [SerializeField] int totalNumberofColors = 24;
     [SerializeField] int wheelsCount = 2;
     [SerializeField]
@@ -93,6 +94,7 @@ public class ColorPaletteController : MonoBehaviour, IBeginDragHandler, IDragHan
     void UpdateMaterialInitialValues()
     {
         colorWheelMat.SetFloat("_StartingAngle", startingAngle);
+        colorWheelMat.SetInt("_IncludeGray", includeGray ? 1 : 0);
         colorWheelMat.SetInt("_ColorsCount" , totalNumberofColors);
         colorWheelMat.SetInt("_WheelsCount", wheelsCount);
 
@@ -169,9 +171,18 @@ public class ColorPaletteController : MonoBehaviour, IBeginDragHandler, IDragHan
         
         float shiftedH = (pickerHueOffset + startingAngle / 360.0f + Hue % wheelsCount) / wheelsCount;
         shiftedH = shiftedH % 1.0f;
-        float discretedH = ((int)(shiftedH * totalNumberofColors)) / (1.0f* (totalNumberofColors-1));
+        float discretedH;
+        if (includeGray)
+        {
+            discretedH = (int) (shiftedH * totalNumberofColors) / (1.0f * (totalNumberofColors - 1));
+        }
+        else
+        {
+            discretedH = (int) (shiftedH * totalNumberofColors) / (1.0f * totalNumberofColors);
+        }
+        
         Color color;
-        if (shiftedH > 1 - 1.0 / totalNumberofColors  && shiftedH <= 1)//for gray
+        if (includeGray && shiftedH > 1 - 1.0 / totalNumberofColors && shiftedH <= 1) //for gray
             color = Color.HSVToRGB(0, 0, (val - sat + 0.75f) / 1.5f);
         else
             color = Color.HSVToRGB(discretedH, sat, val);
